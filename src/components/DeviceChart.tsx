@@ -1,12 +1,14 @@
 import ReactECharts from 'echarts-for-react';
-import type { DeviceData } from '../types';
+import type { DeviceData, SourceName } from '../types';
+import type { EChartsOption } from 'echarts';
 
 interface Props {
   data: DeviceData[];
+  selectedSource: SourceName;
 }
 
-export default function DeviceChart({ data }: Props) {
-  const option = {
+export default function DeviceChart({ data, selectedSource }: Props) {
+  const option: EChartsOption = {
     backgroundColor: 'transparent',
     tooltip: {
       trigger: 'item',
@@ -49,15 +51,23 @@ export default function DeviceChart({ data }: Props) {
             color: i === 0 ? '#3b82f6' : '#10b981',
           },
         })),
+        animationDuration: 600,
       },
     ],
   };
 
   return (
     <div className="bg-panel-bg rounded-xl p-4 h-full flex flex-col border border-slate-700/50">
-      <h3 className="text-sm font-semibold text-slate-200 mb-2">设备分布</h3>
+      <div className="flex items-center gap-1.5 mb-2">
+        <h3 className="text-sm font-semibold text-slate-200">设备分布</h3>
+        {selectedSource !== 'all' && (
+          <span className="text-[9px] text-blue-400 bg-blue-500/20 px-1 rounded">
+            {selectedSource}
+          </span>
+        )}
+      </div>
       <div className="flex-1 min-h-0">
-        <ReactECharts option={option} style={{ height: '100%', width: '100%' }} />
+        <ReactECharts option={option} style={{ height: '100%', width: '100%' }} notMerge={true} />
       </div>
       <div className="flex justify-center gap-6 text-xs mt-2">
         {data.map((d, i) => (

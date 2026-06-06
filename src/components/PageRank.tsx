@@ -1,16 +1,24 @@
-import type { PageRankItem } from '../types';
+import type { PageRankItem, SourceName } from '../types';
 import { ArrowUpRight } from 'lucide-react';
 
 interface Props {
   data: PageRankItem[];
+  selectedSource: SourceName;
 }
 
-export default function PageRank({ data }: Props) {
+export default function PageRank({ data, selectedSource }: Props) {
   const maxVisits = Math.max(...data.map((d) => d.visits));
 
   return (
     <div className="bg-panel-bg rounded-xl p-4 h-full flex flex-col border border-slate-700/50">
-      <h3 className="text-sm font-semibold text-slate-200 mb-3">热门页面排行</h3>
+      <div className="flex items-center gap-1.5 mb-3">
+        <h3 className="text-sm font-semibold text-slate-200">热门页面排行</h3>
+        {selectedSource !== 'all' && (
+          <span className="text-[9px] text-blue-400 bg-blue-500/20 px-1 rounded">
+            {selectedSource}
+          </span>
+        )}
+      </div>
       <div className="flex-1 overflow-y-auto pr-1">
         <table className="w-full text-left text-xs">
           <thead>

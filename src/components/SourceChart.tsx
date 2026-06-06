@@ -1,19 +1,41 @@
+import { useRef, useEffect } from 'react';
 import ReactECharts from 'echarts-for-react';
-import type { SourceData } from '../types';
+import type { SourceData, SourceName } from '../types';
+import type { EChartsOption } from 'echarts';
 
 interface Props {
   data: SourceData[];
+  selectedSource: SourceName;
+  onSelect: (name: string) => void;
 }
 
-export default function SourceChart({ data }: Props) {
-  const option = {
+const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+
+export default function SourceChart({ data, selectedSource, onSelect }: Props) {
+  const chartRef = useRef<ReactECharts>(null);
+
+  useEffect(() => {
+    const chart = chartRef.current?.getEchartsInstance();
+    if (!chart) return;
+
+    const handleClick = (params: { name: string }) => {
+      onSelect(params.name);
+    };
+
+    chart.on('click', handleClick);
+    return () => {
+      chart.off('click', handleClick);
+    };
+  }, [onSelect]);
+
+  const option: EChartsOption = {
     backgroundColor: 'transparent',
     tooltip: {
       trigger: 'item',
       backgroundColor: 'rgba(30,41,59,0.95)',
       borderColor: '#475569',
       textStyle: { color: '#e2e8f0' },
-      formatter: '{b}: {c} ({d}%)',
+      formatter: '{b}: {c} ({d}%)<br/><span style="color:#94a3b8;font-size:10px">点击切换筛选</span>',
     },
     legend: {
       orient: 'vertical',
@@ -22,6 +44,7 @@ export default function SourceChart({ data }: Props) {
       textStyle: { color: '#94a3b8', fontSize: 11 },
       itemWidth: 10,
       itemHeight: 10,
+      selectedMode: false,
     },
     series: [
       {
@@ -43,23 +66,49 @@ export default function SourceChart({ data }: Props) {
             fontWeight: 'bold',
             color: '#e2e8f0',
           },
+          itemStyle: {
+            shadowBlur: 20,
+            shadowOffsetX: 0,
+            shadowColor: 'rgba(0, 0, 0, 0.5)',
+          },
         },
         labelLine: { show: false },
-        data: data.map((d, i) => ({
-          ...d,
-          itemStyle: {
-            color: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'][i % 5],
-          },
-        })),
+        data: data.map((d, i) => {
+          const isSelected = selectedSource === d.name;
+          const isFiltered = selectedSource !== 'all' && !isSelected;
+          return {
+            ...d,
+            itemStyle: {
+              color: COLORS[i % 5],
+              opacity: isFiltered ? 0.3 : 1,
+              borderWidth: isSelected ? 3 : 2,
+              borderColor: isSelected ? '#e2e8f0' : '#1e293b',
+            },
+            emphasis: {
+              itemStyle: {
+                color: COLORS[i % 5],
+                opacity: 1,
+              },
+            },
+          };
+        }),
       },
     ],
   };
 
   return (
     <div className="bg-panel-bg rounded-xl p-4 h-full flex flex-col border border-slate-700/50">
-      <h3 className="text-sm font-semibold text-slate-200 mb-2">访客来源分布</h3>
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-sm font-semibold text-slate-200">访客来源分布</h3>
+        <span className="text-[10px] text-slate-500">点击饼图筛选渠道</span>
+      </div>
       <div className="flex-1 min-h-0">
-        <ReactECharts option={option} style={{ height: '100%', width: '100%' }} />
+        <ReactECharts
+          ref={chartRef}
+          option={option}
+          style={{ height: '100%', width: '100%' }}
+          opts={{ renderer: 'canvas' }}
+        />
       </div>
     </div>
   );

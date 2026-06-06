@@ -1,16 +1,18 @@
 import { useState } from 'react';
 import ReactECharts from 'echarts-for-react';
-import type { TrafficView } from '../types';
+import type { TrafficView, SourceName } from '../types';
+import type { EChartsOption } from 'echarts';
 
 interface Props {
   data: TrafficView;
+  selectedSource: SourceName;
 }
 
-export default function TrafficChart({ data }: Props) {
+export default function TrafficChart({ data, selectedSource }: Props) {
   const [view, setView] = useState<'hour' | 'day'>('hour');
   const current = data[view];
 
-  const option = {
+  const option: EChartsOption = {
     backgroundColor: 'transparent',
     tooltip: {
       trigger: 'axis',
@@ -50,6 +52,7 @@ export default function TrafficChart({ data }: Props) {
           },
         },
         data: current.map((d) => d.value),
+        animationDuration: 600,
       },
     ],
   };
@@ -57,7 +60,14 @@ export default function TrafficChart({ data }: Props) {
   return (
     <div className="bg-panel-bg rounded-xl p-4 h-full flex flex-col border border-slate-700/50">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-semibold text-slate-200">访问量趋势</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-slate-200">访问量趋势</h3>
+          {selectedSource !== 'all' && (
+            <span className="text-[10px] text-blue-400 bg-blue-500/20 px-1.5 py-0.5 rounded">
+              {selectedSource}
+            </span>
+          )}
+        </div>
         <div className="flex bg-slate-800 rounded-lg p-0.5">
           <button
             onClick={() => setView('hour')}
@@ -78,7 +88,7 @@ export default function TrafficChart({ data }: Props) {
         </div>
       </div>
       <div className="flex-1 min-h-0">
-        <ReactECharts option={option} style={{ height: '100%', width: '100%' }} />
+        <ReactECharts option={option} style={{ height: '100%', width: '100%' }} notMerge={true} />
       </div>
     </div>
   );
