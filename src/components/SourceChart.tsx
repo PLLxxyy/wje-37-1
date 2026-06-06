@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useMemo } from 'react';
 import ReactECharts from 'echarts-for-react';
 import type { SourceData, SourceName } from '../types';
 import type { EChartsOption } from 'echarts';
@@ -12,21 +12,11 @@ interface Props {
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 export default function SourceChart({ data, selectedSource, onSelect }: Props) {
-  const chartRef = useRef<ReactECharts>(null);
-
-  useEffect(() => {
-    const chart = chartRef.current?.getEchartsInstance();
-    if (!chart) return;
-
-    const handleClick = (params: { name: string }) => {
+  const onEvents = useMemo(() => ({
+    click: (params: { name: string }) => {
       onSelect(params.name);
-    };
-
-    chart.on('click', handleClick);
-    return () => {
-      chart.off('click', handleClick);
-    };
-  }, [onSelect]);
+    },
+  }), [onSelect]);
 
   const option: EChartsOption = {
     backgroundColor: 'transparent',
@@ -104,10 +94,11 @@ export default function SourceChart({ data, selectedSource, onSelect }: Props) {
       </div>
       <div className="flex-1 min-h-0">
         <ReactECharts
-          ref={chartRef}
           option={option}
           style={{ height: '100%', width: '100%' }}
           opts={{ renderer: 'canvas' }}
+          onEvents={onEvents}
+          notMerge={true}
         />
       </div>
     </div>

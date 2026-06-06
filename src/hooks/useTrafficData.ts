@@ -52,7 +52,7 @@ function generatePages(source: SourceName): PageRankItem[] {
 }
 
 function generateDevices(source: SourceName): DeviceData[] {
-  const baseDesktop = source === '搜索引擎' ? 55 : source === '移动端' ? 35 : 45;
+  const baseDesktop = source === '搜索引擎' ? 55 : source === '社交媒体' ? 40 : source === '邮件营销' ? 42 : 45;
   const desktop = Math.min(85, Math.max(25, baseDesktop + Math.floor((Math.random() - 0.5) * 20)));
   return [
     { name: '桌面端', value: desktop, source },
